@@ -20,8 +20,5 @@
 
     "prefer-destructuring": ["warn", { "object": true, "array": false }],
     "no-unused-vars": ["warn", { "argsIgnorePattern": "req|res|next|val" }]
-  },
-  "engines": {
-    "node": "^18.15.0"
   }
 }
