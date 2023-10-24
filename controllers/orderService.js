@@ -145,8 +145,8 @@ exports.checkoutSession = asyncHandler(async (req, res, next) => {
       },
     ],
     mode: "payment",
-    success_url: `${req.protocol}://${req.get("host")}/orders`,
-    cancel_url: `${req.protocol}://${req.get("host")}/carts`,
+    success_url: `cave-shop.web.app/user/allorder`,
+    cancel_url: `cave-shop.web.app//carts`,
     customer_email: req.user.email,
     client_reference_id: req.params.cartId,
     metadata: req.body.shoppingAddress,
@@ -203,7 +203,7 @@ const createOrderCheckout = async (session) => {
 // @route   PUT /webhook-checkout
 // @access  From stripe
 exports.webhookCheckout = (req, res, next) => {
-  const signature = req.headers["stripe-signature"].toString();
+  const signature = req.headers["stripe-signature"];
   let event;
   try {
     event = stripe.webhooks.constructEvent(
