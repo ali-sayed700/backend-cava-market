@@ -25,3 +25,4 @@ exports.updateCoupon = factory.updateOne(Coupon);
 // @route    DELETE /api/v1/coupons/:id
 // @access   Private/Admin/Manager
 exports.deleteCoupon = factory.deleteOne(Coupon);
+
