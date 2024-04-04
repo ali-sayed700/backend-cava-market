@@ -12,33 +12,29 @@ const Order = require("../models/orderModel");
 // @route   POST /api/orders/cartId
 // @access  Private/Protected/User
 exports.createCashOrder = asyncHandler(async (req, res, next) => {
-  // app settings
+  // // app settings
   const taxPrice = 0;
   const shippingPrice = 0;
-
-  // 1) Get logged user cart
+  // // 1) Get logged user cart
   const cart = await Cart.findById(req.params.cartId);
   if (!cart) {
     return next(
       new ApiError(`There is no cart for this user :${req.user._id}`, 404)
     );
   }
-
-  // 2) Check if there is coupon apply
+  // // 2) Check if there is coupon apply
   const cartPrice = cart.totalAfterDiscount
     ? cart.totalAfterDiscount
     : cart.totalCartPrice;
-
-  // 3) Create order with default cash option
+  // // 3) Create order with default cash option
   const order = await Order.create({
     user: req.user._id,
     cartItems: cart.products,
     shippingAddress: req.body.shippingAddress,
     totalOrderPrice: taxPrice + shippingPrice + cartPrice,
   });
-
-  // 4) After creating order decrement product quantity, increment sold
-  // Performs multiple write operations with controls for order of execution.
+  // // 4) After creating order decrement product quantity, increment sold
+  // // Performs multiple write operations with controls for order of execution.
   if (order) {
     const bulkOption = cart.products.map((item) => ({
       updateOne: {
@@ -46,13 +42,10 @@ exports.createCashOrder = asyncHandler(async (req, res, next) => {
         update: { $inc: { quantity: -item.count, sold: +item.count } },
       },
     }));
-
     await Product.bulkWrite(bulkOption, {});
-
     // 5) Clear cart
     await Cart.findByIdAndDelete(req.params.cartId);
   }
-
   res.status(201).json({ status: "success", data: order });
 });
 
@@ -145,13 +138,15 @@ exports.checkoutSession = asyncHandler(async (req, res, next) => {
       },
     ],
     mode: "payment",
+    // success_url: `${req.protocol}://${req.get("host")}/user/allorder`,
     success_url: `https://cave-shop.web.app/user/allorder`,
+    // success_url: `http://127.0.0.1:3000/user/allorder`,
+    // cancel_url: `${req.protocol}://${req.get("host")}/cart`,
     cancel_url: `https://cave-shop.web.app/cart`,
     customer_email: req.user.email,
     client_reference_id: req.params.cartId,
-    metadata: req.body.shoppingAddress,
+    metadata: req.body.shippingAddress,
   });
-
   // res.redirect(303, session.url);
 
   // 3) Create session as response
@@ -164,7 +159,7 @@ exports.checkoutSession = asyncHandler(async (req, res, next) => {
 const createOrderCheckout = async (session) => {
   // 1) Get needed data from session
   const cartId = session.client_reference_id;
-  const checkoutAmount = session.amount_total / 100;
+  const checkoutAmount = session.display_items[0].amount / 100;
   const shippingAddress = session.metadata;
 
   // 2) Get Cart and User
@@ -202,7 +197,8 @@ const createOrderCheckout = async (session) => {
 // @desc    This webhook will run when stipe payment successfully paid
 // @route   PUT /webhook-checkout
 // @access  From stripe
-exports.webhookCheckout = (req, res, next) => {
+exports.webhookCheckout = async (req, res, next) => {
+  // const signature = req.headers["stripe-signature"].toString();
   const signature = req.headers["stripe-signature"];
   let event;
   try {

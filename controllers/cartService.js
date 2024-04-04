@@ -1,9 +1,9 @@
-const asyncHandler = require('express-async-handler');
+const asyncHandler = require("express-async-handler");
 
-const ApiError = require('../utils/apiError');
-const Product = require('../models/productModel');
-const Cart = require('../models/cartModel');
-const Coupon = require('../models/couponModel');
+const ApiError = require("../utils/apiError");
+const Product = require("../models/productModel");
+const Cart = require("../models/cartModel");
+const Coupon = require("../models/couponModel");
 
 const calcTotalCartPrice = async (cart) => {
   let totalPrice = 0;
@@ -47,8 +47,8 @@ exports.addProductToCart = asyncHandler(async (req, res, next) => {
       //product does not exists in cart, add new item
       cart.products.push({ product: productId, color, price: product.price });
     }
-    // cart = await cart.save();
-    // return res.status(201).send(cart);
+    cart = await cart.save();
+    return res.status(201).send(cart);
   }
   if (!cart) {
     //no cart for user, create new cart
@@ -57,20 +57,20 @@ exports.addProductToCart = asyncHandler(async (req, res, next) => {
       products: [{ product: productId, color, price: product.price }],
     });
   }
-  // let totalPrice = 0;
-  // cart.products.forEach((prod) => {
-  //   totalPrice += prod.price * prod.count;
-  // });
+  let totalPrice = 0;
+  cart.products.forEach((prod) => {
+    totalPrice += prod.price * prod.count;
+  });
 
-  // cart.totalCartPrice = totalPrice;
-  // await cart.save();
+  cart.totalCartPrice = totalPrice;
+  await cart.save();
 
   // Calculate total cart price
   await calcTotalCartPrice(cart);
 
   return res.status(200).json({
-    status: 'success',
-    message: 'Product added successfully to your cart',
+    status: "success",
+    message: "Product added successfully to your cart",
     numOfCartItems: cart.products.length,
     data: cart,
   });
@@ -85,14 +85,14 @@ exports.updateCartProductCount = asyncHandler(async (req, res, next) => {
   // 1) Check if there is cart for logged user
   const cart = await Cart.findOne({ cartOwner: req.user._id })
     .populate({
-      path: 'products.product',
-      select: 'title imageCover ratingsAverage brand category ',
-      populate: { path: 'brand', select: 'name -_id', model: 'Brand' },
+      path: "products.product",
+      select: "title imageCover ratingsAverage brand category ",
+      populate: { path: "brand", select: "name -_id", model: "Brand" },
     })
     .populate({
-      path: 'products.product',
-      select: 'title imageCover ratingsAverage brand category',
-      populate: { path: 'category', select: 'name -_id', model: 'Category' },
+      path: "products.product",
+      select: "title imageCover ratingsAverage brand category",
+      populate: { path: "category", select: "name -_id", model: "Category" },
     });
   if (!cart) {
     return next(
@@ -118,7 +118,7 @@ exports.updateCartProductCount = asyncHandler(async (req, res, next) => {
   await calcTotalCartPrice(cart);
 
   return res.status(200).json({
-    status: 'success',
+    status: "success",
     numOfCartItems: cart.products.length,
     data: cart,
   });
@@ -130,14 +130,14 @@ exports.updateCartProductCount = asyncHandler(async (req, res, next) => {
 exports.getLoggedUserCart = asyncHandler(async (req, res, next) => {
   const cart = await Cart.findOne({ cartOwner: req.user._id })
     .populate({
-      path: 'products.product',
-      select: 'title imageCover ratingsAverage brand category ',
-      populate: { path: 'brand', select: 'name -_id', model: 'Brand' },
+      path: "products.product",
+      select: "title imageCover ratingsAverage brand category ",
+      populate: { path: "brand", select: "name -_id", model: "Brand" },
     })
     .populate({
-      path: 'products.product',
-      select: 'title imageCover ratingsAverage brand category',
-      populate: { path: 'category', select: 'name -_id', model: 'Category' },
+      path: "products.product",
+      select: "title imageCover ratingsAverage brand category",
+      populate: { path: "category", select: "name -_id", model: "Category" },
     });
 
   if (!cart) {
@@ -145,8 +145,9 @@ exports.getLoggedUserCart = asyncHandler(async (req, res, next) => {
       new ApiError(`No cart exist for this user: ${req.user._id}`, 404)
     );
   }
+  await calcTotalCartPrice(cart);
   return res.status(200).json({
-    status: 'success',
+    status: "success",
     numOfCartItems: cart.products.length,
     data: cart,
   });
@@ -165,21 +166,21 @@ exports.removeCartProduct = asyncHandler(async (req, res, next) => {
     { new: true }
   )
     .populate({
-      path: 'products.product',
-      select: 'title imageCover ratingsAverage brand category ',
-      populate: { path: 'brand', select: 'name -_id', model: 'Brand' },
+      path: "products.product",
+      select: "title imageCover ratingsAverage brand category ",
+      populate: { path: "brand", select: "name -_id", model: "Brand" },
     })
     .populate({
-      path: 'products.product',
-      select: 'title imageCover ratingsAverage brand category',
-      populate: { path: 'category', select: 'name -_id', model: 'Category' },
+      path: "products.product",
+      select: "title imageCover ratingsAverage brand category",
+      populate: { path: "category", select: "name -_id", model: "Category" },
     });
 
   // Calculate total cart price
   await calcTotalCartPrice(cart);
 
   return res.status(200).json({
-    status: 'success',
+    status: "success",
     numOfCartItems: cart.products.length,
     data: cart,
   });
@@ -199,19 +200,19 @@ exports.clearLoggedUserCart = asyncHandler(async (req, res, next) => {
 // @access    Private/User
 exports.applyCouponToCart = asyncHandler(async (req, res, next) => {
   const { couponName } = req.body;
-  console.log(couponName);
+
 
   // 2) Get current user cart
   const cart = await Cart.findOne({ cartOwner: req.user._id })
     .populate({
-      path: 'products.product',
-      select: 'title imageCover ratingsAverage brand category ',
-      populate: { path: 'brand', select: 'name -_id', model: 'Brand' },
+      path: "products.product",
+      select: "title imageCover ratingsAverage brand category ",
+      populate: { path: "brand", select: "name -_id", model: "Brand" },
     })
     .populate({
-      path: 'products.product',
-      select: 'title imageCover ratingsAverage brand category',
-      populate: { path: 'category', select: 'name -_id', model: 'Category' },
+      path: "products.product",
+      select: "title imageCover ratingsAverage brand category",
+      populate: { path: "category", select: "name -_id", model: "Category" },
     });
 
   // 1) Get coupon based on it's unique name and expire > date.now
@@ -223,7 +224,7 @@ exports.applyCouponToCart = asyncHandler(async (req, res, next) => {
     cart.totalAfterDiscount = undefined;
     cart.coupon = undefined;
     await cart.save();
-    return next(new ApiError('Coupon is invalid or has expired', 400));
+    return next(new ApiError("Coupon is invalid or has expired", 400));
   }
 
   const totalPrice = await calcTotalCartPrice(cart);
@@ -239,7 +240,7 @@ exports.applyCouponToCart = asyncHandler(async (req, res, next) => {
   await cart.save();
 
   return res.status(200).json({
-    status: 'success',
+    status: "success",
     numOfCartItems: cart.products.length,
     coupon: coupon.name,
     data: cart,

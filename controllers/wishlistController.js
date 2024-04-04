@@ -35,7 +35,7 @@ exports.removeProductFromWishlist = asyncHandler(async (req, res, next) => {
     },
     { new: true }
   );
-  console.log(user);
+
   return res.status(200).json({
     status: "success",
     message: "Product removed successfully to your wishlist",
@@ -55,5 +55,5 @@ exports.myWishlist = asyncHandler(async (req, res, next) => {
     results: user.wishlist.length,
     data: user.wishlist,
   });
-  console.log(user);
+
 });

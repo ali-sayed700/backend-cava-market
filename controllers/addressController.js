@@ -28,7 +28,7 @@ exports.addAddressToUser = asyncHandler(async (req, res, next) => {
 // @access    Private/User
 exports.removeAddress = asyncHandler(async (req, res, next) => {
   const { addressId } = req.params;
-  console.log(addressId);
+
   const user = await User.findByIdAndUpdate(
     req.user._id,
     {

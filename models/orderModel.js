@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 
+// const AutoIncrement = require("mongoose-sequence")(mongoose);
+
 const orderSchema = new mongoose.Schema(
   {
     user: {
@@ -63,5 +65,18 @@ orderSchema.pre(/^find/, function (next) {
 
   next();
 });
+
+// orderSchema.plugin(AutoIncrement, {
+//   inc_field: "id",
+//   start_seq: 1,
+//   inc_amount: 1,
+// });
+
+// orderSchema.plugin(autoIncrement.plugin, {
+//   model: "Order",
+//   field: "id",
+//   startAt: 1,
+//   incrementBy: 1,
+// });
 
 module.exports = mongoose.model("Order", orderSchema);

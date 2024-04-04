@@ -7,7 +7,10 @@ const morgan = require("morgan");
 require("colors");
 const compression = require("compression");
 const cors = require("cors");
-const bodyParser = require("body-parser");
+// const helmet = require("helmet");
+// const bodyParser = require("body-parser");
+// const cookieParser = require("cookie-parser");
+// const proxy = require("http-proxy-middleware");
 
 const ApiError = require("./utils/apiError");
 const globalError = require("./middlewares/errorMiddleware");
@@ -16,67 +19,36 @@ const { webhookCheckout } = require("./controllers/orderService");
 
 const dbConnection = require("./config/database");
 
-// const categoryRouter = require('./routes/categoryRoute');
-// const subCategoryRouter = require('./routes/subCategoryRoute');
-// const brandRouter = require('./routes/brandRoute');
-// const productRouter = require('./routes/productRoute');
-// const userRouter = require('./routes/userRoute');
-// const authRouter = require('./routes/authRoute');
-// const reviewRouter = require('./routes/reviewRoute');
-// const wishlistRouter = require('./routes/wishlistRoute');
-// const addressRouter = require('./routes/addressRoute');
-// const couponRouter = require('./routes/couponRoute');
-
 // DB Connection
 dbConnection();
 
 // Builtin Middleware
 const app = express();
-
-app.use(
-  cors({
-    origin: "*",
-  })
-);
+app.use(cors());
 app.options("*", cors());
-app.enable("trust proxy", 1);
+app.use(compression());
+app.enable("trust proxy");
 
-// Add hook here before we call body parser, because stripe will send data in the body in form raw
 app.post(
   "/webhook-checkout",
-  // express.raw({ type: 'application/json' }),
-  bodyParser.raw({ type: "application/json" }),
+  express.raw({ type: "application/json" }),
+  // bodyParser.raw({ type: "application/json" }),
   webhookCheckout
 );
-
-// Used to parse JSON bodies
-app.use(express.json());
-// app.use(cors());
-// app.options('*', cors());
-
-// Parse URL-encoded bodies
-app.use(express.urlencoded({ extended: true, limit: "10kb" }));
 app.use(express.static(path.join(__dirname, "uploads")));
+app.use(express.urlencoded({ extended: true, limit: "10kb" }));
+app.use(express.json({ limit: "20kb" }));
+
+// app.use(express.static(path.join(__dirname, "uploads")));
+// app.use(express.json({ limit: "20kb" }));
+// app.use(helmet());
+// app.use(express.json({ limit: "20kb" }));
+mountRoutes(app);
 
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
   console.log(`Mode : ${process.env.NODE_ENV}`.yellow);
 }
-
-app.use(compression());
-
-// Mount routers
-mountRoutes(app);
-// app.use('/api/v1/categories', categoryRouter);
-// app.use('/api/v1/subcategories', subCategoryRouter);
-// app.use('/api/v1/brands', brandRouter);
-// app.use('/api/v1/products', productRouter);
-// app.use('/api/v1/users', userRouter);
-// app.use('/api/v1/auth', authRouter);
-// app.use('/api/v1/reviews', reviewRouter);
-// app.use('/api/v1/wishlist', wishlistRouter);
-// app.use('/api/v1/addresses', addressRouter);
-// app.use('/api/v1/coupons', couponRouter);
 
 app.all("*", (req, res, next) => {
   // 3) Use a generic api error

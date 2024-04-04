@@ -84,7 +84,8 @@ exports.getOne = (Model, populateOpts) =>
   });
 
 exports.getAll = (Model, modelName = "") =>
-  asyncHandler(async (req, res) => {
+asyncHandler(async (req, res) => {
+  
     let filter = {};
     if (req.filterObject) {
       filter = req.filterObject;
@@ -93,19 +94,19 @@ exports.getAll = (Model, modelName = "") =>
     // Build query
     // const documentsCounts = await Model.countDocuments();
     const apiFeatures = new ApiFeatures(Model.find(filter), req.query)
-      .filter()
-      .search(modelName)
-      .limitFields()
-      .sort();
+    .search(modelName)
+    .filter()
+    .limitFields()
+    .sort()
     // .paginate();
-
     // Apply pagination after filer and search
     const docsCount = await Model.countDocuments(apiFeatures.mongooseQuery);
     apiFeatures.paginate(docsCount);
-
+    
     // Execute query
     const { mongooseQuery, paginationResult } = apiFeatures;
     const documents = await mongooseQuery;
+
 
     // Set Images url
     // if (Model.collection.collectionName === "products") {

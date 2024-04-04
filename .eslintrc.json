@@ -14,11 +14,9 @@
     "no-underscore-dangle": "off",
     "class-methods-use-this": "off",
     "no-undef": "error",
-    "import/no-extraneous-dependencies": "off",
-    "eslint-disable-next-line no-unused-vars": "off",
-    "import/order": "off",
-
-    "prefer-destructuring": ["warn", { "object": true, "array": false }],
+    "node/no-unsupported-features/es-syntax": "off",
+    "import/no-extraneous-dependencies": ["off", { "devDependencies": true }],
+    "prefer-destructuring": ["error", { "object": true, "array": false }],
     "no-unused-vars": ["warn", { "argsIgnorePattern": "req|res|next|val" }]
   }
 }

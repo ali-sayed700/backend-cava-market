@@ -21,7 +21,7 @@ exports.resizeImage = asyncHandler(async (req, res, next) => {
     // .toFormat('jpeg')
     // .jpeg({ quality: 90 })
     .toFile(`uploads/brands/${filename}`); // write into a file on the disk
-  console.log(filename);
+
   req.body.image = filename;
   next();
 });
